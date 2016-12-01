@@ -3,12 +3,12 @@
 
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const libp2p = require('../../libp2p.js')
+const libp2p = require('../../src/libp2p.js')
 const multiaddr = require('multiaddr')
 const pull = require('pull-stream')
 const async = require('async')
 const Pushable = require('pull-pushable')
-const app = require('./app.json');
+const app = require('./app.json')
 const p = Pushable()
 let idListener
 
@@ -41,18 +41,18 @@ async.parallel([
   nodeDialer.start((err) => {
     if (err) throw err
     console.log('Secondary node ready');
-    nodeDialer.dialByPeerInfo(peerListener, '/chat/1.0.0', (err, conn) => {
+    nodeDialer.dialByPeerInfo(peerListener, app.primary.protocol, (err, conn) => {
       if (err) throw err
       console.log('Secondary dialed to primary node')
       pull(p, conn)
       pull(conn, pull.map((data) => {return data.toString('utf8').replace('\n','')}), pull.drain(console.log))
     })/* dialer ends here */
 
-    // Listener for incoming connections
-    // nodeDialer.handle('/secondary/1.0.0', (protocol, conn) => {
-    //   pull(p, conn)
-    //   pull(conn, pull.map((data) => {return data.toString('utf8').replace('\n','')}), pull.drain(console.log))
-    // })/* Handler one ends */
+    //Listener for incoming connections
+    nodeDialer.handle(app.secondary.protocol, (protocol, conn) => {
+      pull(p, conn)
+      pull(conn, pull.map((data) => {return data.toString('utf8').replace('\n','')}), pull.drain(console.log))
+    })/* Handler one ends */
   })
 })
 

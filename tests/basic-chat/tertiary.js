@@ -3,12 +3,13 @@
 
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const libp2p = require('../../libp2p.js')
+const libp2p = require('../../src/libp2p.js')
 const multiaddr = require('multiaddr')
 const pull = require('pull-stream')
 const async = require('async')
 const Pushable = require('pull-pushable')
-const p = Pushable()
+const pushPrimary = Pushable()
+const pushSecondary = Pushable()
 const app = require('./app.json');
 
 async.parallel([
@@ -52,10 +53,17 @@ function setStuffUp(peerPrimary, peerSecondary, nodeTertiary) {
     if (err) throw err
     console.log('Tertiary node ready')
 
-    nodeTertiary.dialByPeerInfo(peerPrimary, '/chat/1.0.0', (err, conn) => {
+    nodeTertiary.dialByPeerInfo(peerPrimary, app.primary.protocol, (err, conn) => {
       if (err) throw err
       console.log('Tertiary node dialed to primary node')
-      pull(p, conn)
+      pull(pushPrimary, conn)
+      pull(conn, pull.map((data) => {return data.toString('utf8').replace('\n','')}), pull.drain(console.log))
+    })/* dialer ends here */
+
+    nodeTertiary.dialByPeerInfo(peerSecondary, app.secondary.protocol, (err, conn) => {
+      if (err) throw err
+      console.log('Tertiary node dialed to secondary node')
+      pull(pushSecondary, conn)
       pull(conn, pull.map((data) => {return data.toString('utf8').replace('\n','')}), pull.drain(console.log))
     })/* dialer ends here */
   })
@@ -63,6 +71,17 @@ function setStuffUp(peerPrimary, peerSecondary, nodeTertiary) {
 
 process.stdin.setEncoding('utf8')
 process.openStdin().on('data', (chunk) => {
-  var data = chunk.toString()
-  p.push(data)
+  try {
+    var data = chunk.toString()
+    var val = JSON.parse(chunk.toString())
+    if (val.receiver === 'primary') {
+      pushPrimary.push(data)
+    }else if (val.receiver === 'secondary') {
+      pushSecondary.push(data)
+    }else {
+      console.log('invalid receiver option. Must be \'primary\' or \'secondary\'');
+    }
+  } catch (e) {
+    console.log('failed '+e);
+  }
 })

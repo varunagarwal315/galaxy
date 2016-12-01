@@ -1,11 +1,14 @@
 {
   "primary" : {
-    "port" : "10333"
+    "port" : "10333",
+    "protocol" : "/primary/chat/1.0.0"
   },
   "secondary" : {
-    "port" : "10789"
+    "port" : "10789",
+    "protocol" : "/secondary/chat/1.0.0"
   },
   "tertiary" : {
-    "port" : "12345"
+    "port" : "12345",
+    "protocol" : "/tertiary/chat/1.0.0"
   }
 }

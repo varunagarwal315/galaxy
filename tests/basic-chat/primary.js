@@ -3,7 +3,7 @@
 
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const libp2p = require('../../libp2p.js')
+const libp2p = require('../../src/libp2p.js')
 const multiaddr = require('multiaddr')
 const pull = require('pull-stream')
 const Pushable = require('pull-pushable')
@@ -28,7 +28,9 @@ function setStuffUp(idListener) {
     peerListener.multiaddrs.forEach((ma) => {
       console.log(ma.toString() + '/ipfs/' + idListener.toB58String())
     })
-    nodeListener.handle('/chat/1.0.0', (protocol, conn) => {
+
+    // Handles a protocol, allowing other nodes to dial to it and communicate
+    nodeListener.handle(app.primary.protocol, (protocol, conn) => {
       pull(p, conn)
       pull(conn, pull.map((data) => {return data.toString('utf8').replace('\n','')}), pull.drain(console.log))
     })/* Handler one ends */

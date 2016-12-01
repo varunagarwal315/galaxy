@@ -17,7 +17,11 @@ Run in two separate terminals
 
 `node secondary.js`
 
-Data typed on each console, gets sent to the other one
+`node tertiary.js`
+
+Data typed on first and second console gets send to the third.
+The third console takes input as a JSON file for now :(
+Input must be {"receiver":"primary/secondary", `further data`}
 
 ## Project Status
 **Status:** *In active development*
