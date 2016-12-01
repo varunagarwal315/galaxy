@@ -1,0 +1,40 @@
+{
+  "name": "galaxy",
+  "version": "1.0.0",
+  "description": "Decentralized chat app, built purely on libp2p",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/varunagarwal315/Galaxy.git"
+  },
+  "keywords": [
+    "ipfs",
+    "libp2p",
+    "galaxy",
+    "chat"
+  ],
+  "author": "varun agarwal",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/varunagarwal315/Galaxy/issues"
+  },
+  "homepage": "https://github.com/varunagarwal315/Galaxy#readme",
+  "dependencies": {
+    "bcrypt": "^0.8.7",
+    "bluebird": "^3.4.6",
+    "libp2p-secio": "^0.6.3",
+    "libp2p-spdy": "^0.10.0",
+    "libp2p-swarm": "^0.26.0",
+    "libp2p-tcp": "^0.9.1",
+    "libp2p-websockets": "^0.9.0",
+    "mafmt": "^2.1.2",
+    "mongoose": "^4.7.0",
+    "multiaddr": "^2.0.3",
+    "peer-book": "^0.3.0",
+    "peer-id": "^0.8.0",
+    "peer-info": "^0.8.0"
+  }
+}

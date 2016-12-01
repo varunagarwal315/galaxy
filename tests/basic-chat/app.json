@@ -1,0 +1,11 @@
+{
+  "primary" : {
+    "port" : "10333"
+  },
+  "secondary" : {
+    "port" : "10789"
+  },
+  "tertiary" : {
+    "port" : "12345"
+  }
+}
