@@ -10,46 +10,49 @@ const async = require('async')
 const Pushable = require('pull-pushable')
 const app = require('./app.json')
 const p = Pushable()
-let idListener
+let idPrimary
 
 async.parallel([
   (callback) => {
-    PeerId.createFromJSON(require('./peer-id-dialer'), (err, idDialer) => {
+    PeerId.createFromJSON(require('./peer-id-dialer'), (err, idSecondary) => {
       if (err) {
         throw err
       }
-      callback(null, idDialer)
+      callback(null, idSecondary)
     })
   },
   (callback) => {
-    PeerId.createFromJSON(require('./peer-id-listener'), (err, idListener) => {
+    PeerId.createFromJSON(require('./peer-id-listener'), (err, idPrimary) => {
       if (err) {
         throw err
       }
-      callback(null, idListener)
+      callback(null, idPrimary)
     })
   }
 ], (err, ids) => {
     if (err) throw err
-  const peerDialer = new PeerInfo(ids[0])
-  peerDialer.multiaddr.add(multiaddr('/ip4/0.0.0.0/tcp/' + app.secondary.port))
-  const nodeDialer = new libp2p.Node(peerDialer)
+  const peerSecondary = new PeerInfo(ids[0])
+  peerSecondary.multiaddr.add(multiaddr('/ip4/0.0.0.0/tcp/' + app.secondary.port))
+  const nodeSecondary = new libp2p.Node(peerSecondary)
 
-  const peerListener = new PeerInfo(ids[1])
-  idListener = ids[1]
-  peerListener.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/' + app.primary.port))
-  nodeDialer.start((err) => {
+  const peerPrimary = new PeerInfo(ids[1])
+  idPrimary = ids[1]
+  peerPrimary.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/' + app.primary.port))
+  nodeSecondary.start((err) => {
     if (err) throw err
     console.log('Secondary node ready');
-    nodeDialer.dialByPeerInfo(peerListener, app.primary.protocol, (err, conn) => {
+    nodeSecondary.swarm.on('peer-mux-established', (peerInfo) => {
+      console.log('Incoming connection from ' + peerInfo.id.toB58String())
+    })
+    nodeSecondary.dialByPeerInfo(peerPrimary, app.primary.protocol, (err, conn) => {
       if (err) throw err
       console.log('Secondary dialed to primary node')
       pull(p, conn)
       pull(conn, pull.map((data) => {return data.toString('utf8').replace('\n','')}), pull.drain(console.log))
-    })/* dialer ends here */
+    })/* Secondary ends here */
 
-    //Listener for incoming connections
-    nodeDialer.handle(app.secondary.protocol, (protocol, conn) => {
+    //Listens for incoming connections
+    nodeSecondary.handle(app.secondary.protocol, (protocol, conn) => {
       pull(p, conn)
       pull(conn, pull.map((data) => {return data.toString('utf8').replace('\n','')}), pull.drain(console.log))
     })/* Handler one ends */

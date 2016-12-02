@@ -37,11 +37,11 @@ async.parallel([
   peerPrimary.multiaddr.add(multiaddr('/ip4/0.0.0.0/tcp/' + app.primary.port))
   const nodePrimary = new libp2p.Node(peerPrimary)
 
-  const peerSecondary = new PeerInfo(ids[0])
+  const peerSecondary = new PeerInfo(ids[1])
   peerSecondary.multiaddr.add(multiaddr('/ip4/0.0.0.0/tcp/' + app.secondary.port))
   const nodeSecondary = new libp2p.Node(peerSecondary)
 
-  const peerTertiary = new PeerInfo(ids[0])
+  const peerTertiary = new PeerInfo(ids[2])
   peerTertiary.multiaddr.add(multiaddr('/ip4/0.0.0.0/tcp/' + app.tertiary.port))
   const nodeTertiary = new libp2p.Node(peerTertiary)
   setStuffUp(peerPrimary, peerSecondary, nodeTertiary)
@@ -52,7 +52,9 @@ function setStuffUp(peerPrimary, peerSecondary, nodeTertiary) {
   nodeTertiary.start((err) => {
     if (err) throw err
     console.log('Tertiary node ready')
-
+    nodeTertiary.swarm.on('peer-mux-established', (peerInfo) => {
+      console.log('Incoming connection from ' + peerInfo.id.toB58String())
+    })
     nodeTertiary.dialByPeerInfo(peerPrimary, app.primary.protocol, (err, conn) => {
       if (err) throw err
       console.log('Tertiary node dialed to primary node')
